@@ -30,3 +30,7 @@
     transform: rotate(360deg);
   }
 }
+#pose-btn {
+  width: 200px;
+  height: 50px;
+}

@@ -6,6 +6,8 @@
     "react-scripts": "2.0.5"
   },
   "dependencies": {
+    "@tensorflow-models/posenet": "^0.2.3",
+    "@tensorflow/tfjs": "^0.13.2",
     "react": "^16.5.2",
     "react-dom": "^16.5.2"
   },
