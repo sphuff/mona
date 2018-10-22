@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
-import mona from './assets/lines.png'
+import React, { Component } from 'react'
+import mona from './assets/mona-lisa.png'
+import eyes from './assets/eyes.png'
 import './App.css';
 import * as posenet from '@tensorflow-models/posenet'
 const imageScaleFactor = 0.5
@@ -18,6 +19,7 @@ let guiState = {
 class App extends Component {
   constructor() {
     super()
+    this.eyePos = 0
     this.state = {
       isLoaded: false, 
       isCapturing: false,
@@ -35,6 +37,8 @@ class App extends Component {
       })
     navigator.mediaDevices.getUserMedia({ video: true})
       .then(mediaStream => {
+        console.log('MEDIA STREAM');
+        
         var video = document.querySelector('video')
         video.srcObject = mediaStream;
         video.onloadedmetadata = () => {
@@ -50,6 +54,8 @@ class App extends Component {
     const video = document.querySelector('video')
     const canvas = document.getElementById('output')
     const mona = document.getElementById('mona')
+    const button = document.getElementById('pose-btn')
+    const eyes = document.getElementById('eyes')
     const ctx = canvas.getContext('2d')
     const videoWidth = video.getBoundingClientRect().width
     const videoHeight = video.getBoundingClientRect().height
@@ -116,12 +122,25 @@ class App extends Component {
         } else {
           people.push(person)
         }
+        const currentPersonEyePosition = person.keypoints.find(point => point.part === 'leftEye' || point.part === 'rightEye')
+        const eyePosX = currentPersonEyePosition && currentPersonEyePosition.position.x ? currentPersonEyePosition.position.x : this.eyePos
+        // restrict eye pos to width of video, get percentage, and use that to calc percentage of mona eye movement
+        const newEyePosX = Math.abs(Math.round((eyePosX / videoWidth) * 25))
+        if (newEyePosX !== self.eyePos) {
+          self.eyePos = newEyePosX
+        }
+        eyes.style.marginLeft = `${self.eyePos}px`
         
-        self.drawRect(ctx, minX, minY, (maxX - minX), (maxY - minY), color)
+        // self.drawRect(ctx, minX, minY, (maxX - minX), (maxY - minY), color)
       })
       requestAnimationFrame(poseDetectionFrame)
     }
+
     poseDetectionFrame()
+    video.style.display = 'none'
+    button.style.display = 'none'
+    eyes.style.display = 'block'
+    eyes.classList.add('move')
   }
 
   distanceIsWithinTolerance(val1, val2) {
@@ -178,11 +197,13 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <video height="450px" width="600px"/>
+      <div className="App" onClick={ () => console.log('APP CLICK')
+      }>
+        <video height="810px" width="1080"/>
         <button id='pose-btn' onClick={this.pose.bind(this)} disabled={!this.state.isLoaded || this.state.isCapturing}>Pose</button>
-        <canvas id='output' height="450px" width="600px"/>
-        <img id="mona" style={{width: '1080px', height:'1803px', visibility: 'hidden'}} src={mona}/>
+        <canvas id='output'/>
+        <img id="eyes" src={eyes}/>
+        <img id="mona" src={mona}/>
       </div>
     );
   }

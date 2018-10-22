@@ -33,4 +33,37 @@
 #pose-btn {
   width: 200px;
   height: 50px;
+  z-index: 5;
+  position: absolute;
+  left: 0;
+}
+
+#pose-btn:hover {
+  cursor: pointer;
+}
+
+video {
+  left: 0;
+  z-index: -2;
+  position: absolute;
+}
+
+#mona, #output {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1080px; 
+  height: 1803px;
+  /* z-index: -1; */
+}
+
+#output {
+  z-index: 1
+}
+
+#eyes {
+  position: absolute;
+  left: 375px;
+  top: 400px;
+  transition: 0.1s margin-left;
 }
