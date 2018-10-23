@@ -26,7 +26,7 @@ class App extends Component {
     }
   }
   componentDidMount() {
-    posenet.load(0.50)
+    posenet.load(0.75)
       .then(net => {
         console.log('LOADED POSENET');
         
@@ -73,7 +73,7 @@ class App extends Component {
       let poses = []
       
       poses = await guiState.net.estimateMultiplePoses(video, imageScaleFactor, flipHorizontal, outputStride, 
-        guiState.multiPose.maxPoseDetections, guiState.multiPose.minPartConfidence, guiState.multiPose.nmsRadius)
+        guiState.multiPose.maxPoseDetections)
       const minPoseConfidence = guiState.multiPose.minPoseConfidence
       const minPartConfidence = guiState.multiPose.minPartConfidence
 
@@ -86,8 +86,6 @@ class App extends Component {
       
       const colors = ['red', 'green', 'blue', 'orange', 'purple']
       poses.forEach((pose, idx) => {
-        if (pose.score < minPoseConfidence)
-          return
         const { keypoints, score } = pose
         let color = colors[idx]
         keypoints.forEach(point => {
@@ -199,7 +197,8 @@ class App extends Component {
     return (
       <div className="App" onClick={ () => console.log('APP CLICK')
       }>
-        <video height="810px" width="1080"/>
+        <p style={{position: 'absolute', top: '0px', right: '20px', color: 'white', zIndex: 100}}>1.5</p>
+        <video height="450px" width="600px"/>
         <button id='pose-btn' onClick={this.pose.bind(this)} disabled={!this.state.isLoaded || this.state.isCapturing}>Pose</button>
         <canvas id='output'/>
         <img id="eyes" src={eyes}/>

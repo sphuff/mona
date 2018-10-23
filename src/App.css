@@ -52,9 +52,12 @@ video {
   position: absolute;
   top: 0;
   left: 0;
+  /* z-index: -1; */
+}
+
+#mona {
   width: 1080px; 
   height: 1803px;
-  /* z-index: -1; */
 }
 
 #output {
@@ -65,5 +68,5 @@ video {
   position: absolute;
   left: 375px;
   top: 400px;
-  transition: 0.1s margin-left;
+  transition: 2s margin-left;
 }
