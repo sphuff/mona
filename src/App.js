@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import mona from './assets/mona-lisa.png'
 import eyes from './assets/eyes.png'
+import wink from './assets/wink.png'
+import wordBalloon from './assets/wordballoon.png'
 import './App.css';
 import * as posenet from '@tensorflow-models/posenet'
 const imageScaleFactor = 0.5
@@ -26,7 +28,7 @@ class App extends Component {
     }
   }
   componentDidMount() {
-    posenet.load(0.75)
+    posenet.load()
       .then(net => {
         console.log('LOADED POSENET');
         
@@ -84,8 +86,8 @@ class App extends Component {
       ctx.drawImage(mona, 0, 0, canvasWidth, canvasHeight)
       ctx.restore()
       
-      const colors = ['red', 'green', 'blue', 'orange', 'purple']
-      poses.forEach((pose, idx) => {
+      const colors = ['cyan', 'green', 'blue', 'orange', 'purple']
+      const closestPose = poses.reduce((acc, pose, idx) => {
         const { keypoints, score } = pose
         let color = colors[idx]
         keypoints.forEach(point => {
@@ -95,6 +97,8 @@ class App extends Component {
           let partColor
           if (point.part === 'leftWrist' || point.part === 'rightWrist') {
             partColor = 'cyan'
+          } else if (point.part === 'leftShoulder' || point.part === 'rightShoulder') {
+            partColor = 'orange'
           } else {
             partColor = color
           }
@@ -120,25 +124,55 @@ class App extends Component {
         } else {
           people.push(person)
         }
-        const currentPersonEyePosition = person.keypoints.find(point => point.part === 'leftEye' || point.part === 'rightEye')
-        const eyePosX = currentPersonEyePosition && currentPersonEyePosition.position.x ? currentPersonEyePosition.position.x : this.eyePos
-        // restrict eye pos to width of video, get percentage, and use that to calc percentage of mona eye movement
-        const newEyePosX = Math.abs(Math.round((eyePosX / videoWidth) * 25))
-        if (newEyePosX !== self.eyePos) {
-          self.eyePos = newEyePosX
+        const width = Math.abs(minX - maxX)
+        const height = Math.abs(minY - maxY)
+        const {position: {x, y}} = person.keypoints.find(point => point.part === 'leftEye' || point.part === 'rightEye')
+        if ((width * height) > (acc.width * acc.height)) {
+          return {width, height, x, y, keypoints}
+        } else {
+          return acc
         }
-        eyes.style.marginLeft = `${self.eyePos}px`
-        
         // self.drawRect(ctx, minX, minY, (maxX - minX), (maxY - minY), color)
-      })
+      }, {width: 0, height: 0, keypoints: []})
+      const {x, y, keypoints} = closestPose
+      const leftShoulder = keypoints.find(point => point.part === 'leftShoulder' && point.score > 0.5)
+      const rightShoulder = keypoints.find(point => point.part === 'rightShoulder' && point.score > 0.5)
+      if (leftShoulder && rightShoulder) {
+        const  {position: {x: leftShoulderX, y: leftShoulderY}} = leftShoulder
+        const  {position: {x: rightShoulderX, y: rightShoulderY}} = rightShoulder
+        const shoulderDistX = Math.abs(leftShoulderX - rightShoulderX)
+        const shoulderDistY = Math.abs(leftShoulderY - rightShoulderY)
+        
+        if (shoulderDistX > 150) {
+          // person is close
+          self.showWordBalloon()
+          self.hideWink()
+        } else if (shoulderDistX > 125) {
+          self.wink()
+          self.hideWordBalloon()
+        } else {
+          self.hideWink()
+          self.hideWordBalloon()
+        }
+      }
+      self.drawCircle(ctx, x, y, radius, 'red')
+      self.moveEye(x, y, videoWidth, eyes)
       requestAnimationFrame(poseDetectionFrame)
     }
-
     poseDetectionFrame()
     video.style.display = 'none'
     button.style.display = 'none'
     eyes.style.display = 'block'
     eyes.classList.add('move')
+  }
+  
+  moveEye(x, y, videoWidth, eyeDom) {
+    // restrict eye pos to width of video, get percentage, and use that to calc percentage of mona eye movement
+    const newEyePosX = Math.abs(Math.round((x / videoWidth) * 25))
+    if (newEyePosX !== this.eyePos) {
+      this.eyePos = newEyePosX
+    }
+    eyeDom.style.marginLeft = `${this.eyePos}px`
   }
 
   distanceIsWithinTolerance(val1, val2) {
@@ -191,18 +225,37 @@ class App extends Component {
     ctx.strokeStyle = '#003300'
     ctx.stroke()
   }
+  wink() {
+    const wink = document.getElementById('wink')
+    wink.style.display = 'block'
+  }
+  
+  hideWink() {
+    const wink = document.getElementById('wink')
+    wink.style.display = 'none'
+  }
+  showWordBalloon() {
+    const wordBalloon = document.getElementById('word-balloon')
+    wordBalloon.style.display = 'block'
+  }
+  hideWordBalloon() {
+    const wordBalloon = document.getElementById('word-balloon')
+    wordBalloon.style.display = 'none'
+  }
 
 
   render() {
     return (
       <div className="App" onClick={ () => console.log('APP CLICK')
       }>
-        <p style={{position: 'absolute', top: '0px', right: '20px', color: 'white', zIndex: 100}}>1.5</p>
+        <p style={{position: 'absolute', top: '0px', right: '20px', color: 'white', zIndex: 100}}>1.6</p>
         <video height="450px" width="600px"/>
         <button id='pose-btn' onClick={this.pose.bind(this)} disabled={!this.state.isLoaded || this.state.isCapturing}>Pose</button>
         <canvas id='output'/>
         <img id="eyes" src={eyes}/>
+        <img id="wink" src={wink}/>
         <img id="mona" src={mona}/>
+        <img id="word-balloon" src={wordBalloon}/>
       </div>
     );
   }

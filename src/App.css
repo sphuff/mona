@@ -1,5 +1,8 @@
 .App {
   text-align: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
 }
 
 .App-logo {
@@ -57,7 +60,7 @@ video {
 
 #mona {
   width: 1080px; 
-  height: 1803px;
+  height: 1920px;
 }
 
 #output {
@@ -67,6 +70,18 @@ video {
 #eyes {
   position: absolute;
   left: 375px;
-  top: 400px;
-  transition: 2s margin-left;
+  top: 425px;
+  transition: 0.5s margin-left;
+}
+
+#wink {
+  z-index: 2;
+  position: absolute;
+  left: 340px;
+  top: 375px;
+}
+
+#word-balloon {
+  z-index: 2;
+  position: relative;
 }
