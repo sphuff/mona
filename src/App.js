@@ -8,6 +8,8 @@ import * as posenet from '@tensorflow-models/posenet'
 const imageScaleFactor = 0.5
 const outputStride = 16
 const flipHorizontal = true
+const shouldDraw = false
+const showDistanceInteractions = false
 let guiState = {
   net: null,
   multiPose: {
@@ -28,6 +30,10 @@ class App extends Component {
     }
   }
   componentDidMount() {
+    if (!showDistanceInteractions) {
+      this.hideWink()
+      this.hideWordBalloon()
+    }
     posenet.load()
       .then(net => {
         console.log('LOADED POSENET');
@@ -103,7 +109,7 @@ class App extends Component {
             partColor = color
           }
           
-          self.drawCircle(ctx, x, y, radius, partColor)
+          shouldDraw && self.drawCircle(ctx, x, y, radius, partColor)
         })
         const min = (acc, currentVal) => Math.min(acc, currentVal)
         const max = (acc, currentVal) => Math.max(acc, currentVal)
@@ -143,19 +149,21 @@ class App extends Component {
         const shoulderDistX = Math.abs(leftShoulderX - rightShoulderX)
         const shoulderDistY = Math.abs(leftShoulderY - rightShoulderY)
         
-        if (shoulderDistX > 150) {
-          // person is close
-          self.showWordBalloon()
-          self.hideWink()
-        } else if (shoulderDistX > 125) {
-          self.wink()
-          self.hideWordBalloon()
-        } else {
-          self.hideWink()
-          self.hideWordBalloon()
+        if (showDistanceInteractions) {
+          if (shoulderDistX > 150) {
+            // person is close
+            self.showWordBalloon()
+            self.hideWink()
+          } else if (shoulderDistX > 125) {
+            self.wink()
+            self.hideWordBalloon()
+          } else {
+            self.hideWink()
+            self.hideWordBalloon()
+          }
         }
       }
-      self.drawCircle(ctx, x, y, radius, 'red')
+      shouldDraw && self.drawCircle(ctx, x, y, radius, 'red')
       self.moveEye(x, y, videoWidth, eyes)
       requestAnimationFrame(poseDetectionFrame)
     }
@@ -246,9 +254,8 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App" onClick={ () => console.log('APP CLICK')
-      }>
-        <p style={{position: 'absolute', top: '0px', right: '20px', color: 'white', zIndex: 100}}>1.6</p>
+      <div className="App">
+        <p style={{position: 'absolute', top: '0px', right: '20px', color: 'white', zIndex: 100}}>1.7</p>
         <video height="450px" width="600px"/>
         <button id='pose-btn' onClick={this.pose.bind(this)} disabled={!this.state.isLoaded || this.state.isCapturing}>Pose</button>
         <canvas id='output'/>

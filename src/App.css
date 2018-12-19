@@ -71,7 +71,7 @@ video {
   position: absolute;
   left: 375px;
   top: 425px;
-  transition: 0.5s margin-left;
+  transition: 0.25s margin-left;
 }
 
 #wink {
